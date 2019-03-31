@@ -1,8 +1,10 @@
 ---
-title: "GPDI517 Data Visualization Worksheet"
-author: "Tugba Ozturk"
-date: "March 26, 2019"
-output: html_document
+title: "GPDI517: Introduction to data visualization"
+author: "by Tugba Ozturk"
+date: "April 4, 2019"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Data Viz with base-R:
 
-We will use `iris` data frame. Before diving into the `ggplot` world, let's look at the data set and plot a simple graph using `plot()` function:
+Before diving into the `ggplot` world, let's start with the `iris` data frame with base-R and plot a simple graph using `plot()` function:
 
 ```{r df}
 #head(iris)
@@ -22,18 +24,20 @@ colnames(df) <- c("l","w","pl","pw","spe")
 Let's load `dplyr` and create a new column by multiplying the `r colnames(df)[3]` and `r colnames(df)[4]` columns. Make sure to use `head()` function to check `df` data frame and its new column.
 
 ```{r dplyrpractice}
- #loads the dplyr package
- #creates a new column named plpw
- #shows the first 10 lines of the updated data frame
+library("dplyr") #loads the dplyr package
+df <- df %>% mutate(plpw=pl*pw) #creates a new column named plpw
+head(df,10) #shows the first 10 lines of the updated data frame
 ```
 
-Now, let's try out the `plot()` function. 
+Now, let's try out the `plot()` function. Examine the given code and modify it to add x and y labels to the plot, change the color of the data points as well as the symbol. Make sure that the range of its y axis is [0,25]. Hint: `expression(paste())` is a useful combination for the labels!!!
 
 ```{r plot}
 plot(df$l, df$plpw, type="l") #change the code so that it generates a scatter plot!
+#type="l" for line, "b" for both!
+
+
 ```
 
-Add x and y labels to the plot, change the color of the data points as well as the symbol. Make sure that the range of its y axis is [0,25].
 
 Let's look at the following code chunk and add comments to explain each line:
 
@@ -46,8 +50,31 @@ legend("topleft", c("expected", "rare"), fill=c("skyblue3","salmon"), bty="n")
 
 ## ggplot:
 
+Now, install and load the `ggplot` package and plot a graph with `qplot()` and `ggplot()` functions. Be careful to use a data frame; `ggplot` works best with data frames! Examine the examples given below:
 
-Now, install and load the `ggplot` package and plot a graph with `ggplot`. Be careful to use a data frame; `ggplot` works best with data frames!
+```{r ggplotpractice1}
+library("ggplot2")
+#use color brewer as default discrete colors
+scale_colour_discrete <- function(...) scale_color_brewer(palette="Set1", ...)
+scale_fill_discrete <- function(...) scale_fill_brewer(palette="Set1", ...)
+data('mtcars')
+mtcars$gear <- factor(mtcars$gear,levels=c(3,4,5),
+   labels=c("3gears","4gears","5gears")) 
+mtcars$am <- factor(mtcars$am,levels=c(0,1),
+     labels=c("Automatic","Manual"))
+mtcars$cyl <- factor(mtcars$cyl,levels=c(4,6,8),
+   labels=c("4cyl","6cyl","8cyl"))
+
+
+qplot(mpg, data=mtcars, geom="density", fill=gear, alpha=I(.5), 
+   main="Distribution of Gas Milage", xlab="Miles Per Gallon", 
+   ylab="Density") 
+
+qplot(hp, mpg, data=mtcars, shape=am, color=am,
+   facets=gear~cyl, size=I(3),
+   xlab="Horsepower", ylab="Miles per Gallon")
+```
+
 
 ```{r plotpractice2}
 #install.packages("ggplot2")
@@ -62,23 +89,21 @@ print(myplot)
 
 You can add `theme_bw()` to change the theme of your plot as black and white. Check [this website](http://sape.inf.usi.ch/quick-reference/ggplot2/themes) to learn about other `ggplot` themes.
 
-Similarly, fix the following chunk carefully until it generates a graph combining *wt* vs *disp* and *mpg* vs *disp*:
+Fix the following chunk carefully until it generates a complete graph (having two line plots: wt vs disp and mpg vs disp):
 
 ```{r plotpractice3}
-myploy <- ggplot() + 
-  geom_line(data = mtcars, aes(, , color = "wt"),  lty=1) + 
-  geom_line(data = mtcars, aes(, , color = "mpg"),  lty=2) + 
-  ylab("wt or mpg") + xlab("disp") +
-  scale_color_manual(name = "My legend:", 
-                     values = c("wt" = "", "mpg" = "")) +
-  scale_linetype_manual(values=c("solid","dashed")) +
-  theme(axis.text.x=element_text(size=rel(1.2), angle=90),
-        axis.text.y=element_text(size=rel(1.2)), panel.grid.major = , 
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(), 
-        axis.line = element_line(colour = "black"),
-        legend.key=  ) 
-print()
+#ggplot() + 
+#  geom_line(data = mtcars, aes(, , color = "wt"),  lty=) + 
+#  geom_line(data = mtcars, aes(, , color = "mpg"),  lty=) + 
+#  ylab("wt or mpg") + xlab("disp") +
+#  scale_color_manual(name = "My legend:", 
+#                     values = c("wt" = "blue", "mpg" = "orange")) +
+#  scale_linetype_manual(values=c("solid","dashed")) +
+#  theme(axis.text.x=element_text(size=rel(1.2), angle=180),   axis.text.y=element_text(size=rel(1.2)), panel.grid.major = element_blank(), panel.grid.minor = ,
+#panel.background = , 
+#axis.line = element_line(colour = "yellow"),
+#legend.key=) 
+  
 ```
 
 
@@ -90,12 +115,14 @@ Now, let's use `qplot()` function from the `ggplot` package to plot a histogram.
 - to save the plot as a png file.
 
 ```{r plotpractice4}
+#
 
-P <- qplot(mtcars$drat, geom="histogram", binwidth= 0.2, fill=I("blue"), col=I("blue"), bins=20, alpha=) + theme(text = element_text(size=12), legend.position = "none") + xlab("D") + ylab("Count") 
-
+#P <- qplot(mtcars$drat, geom="histogram", col=, binwidth= 0.2, bins=20, alpha=) + theme(text = element_text(size=12), legend.position = "none") + xlab("D") + ylab("Count")
+#print(P)
+#
 ```
 
-One last example with `ggplot` which requires us to read two data frames: *wildtype.dat* and *mutant.dat*.
+One last example with `ggplot()` which requires us to read two data frames: *wildtype.dat* and *mutant.dat*.
 
 ```{r ggplotlastexample1}
 wildtype <- read.table(file="wildtype.dat")
@@ -109,14 +136,17 @@ Check the column names of these data frames. Then, use the following code as a t
 - make sure to generate separate plots by the combination of `prot` and `ind` columns (modify inside of the `facet_wrap()` function!).
 
 
-```{r ggplotlastexample2}
-     #combine the data frames
-print(ggplot(data=all, aes(x=, y=, col=))+geom_point(size=0.5) + 
-        facet_wrap(~paste(  ,  ,  sep="-"), ncol=2) + 
-        xlab(expression(paste(phi, " (",degree,")")))+ 
-        ylab(expression(paste(psi," (", degree, ")")))+
-        theme_bw() +
-        theme_grey(base_size = 18))
+```{r ggplotexample2}
+
+#print(ggplot(data=all, aes(x=, y=, col=))+geom_point(size=0.5)+facet_wrap(~paste(,sep=""),ncol=2)+xlab(expression(paste(phi, " (",degree,")")))+ylab(expression(paste(psi," (", degree, ")")))+theme_bw() + theme_grey(base_size = 18)) #base_size increases the size of all text in the graph consistently!
+
+```
+
+
+Example three:
+```{r ggplotexample3}
+
+
 ```
 
 
@@ -128,21 +158,24 @@ Let's load the `plotly` package to generate an interactive histogram graph of th
 library("plotly")
 set.seed(80)
 d <- diamonds[sample(nrow(diamonds), 500), ]
-h <- plot_ly(d, x=~price, type="", color="")
+h <- plot_ly(d, x=~price, type="histogram", color="salmon")
 print(h)
 layout(h, title="Diamond Prices", yaxis=list(title="Count"), xaxis=list(title="Price"))
 ```
 
-Generate the plot using the following code chunk:
-
-```{r plotpractice6}
-cvsp <- plot_ly(d, x=~price, y=~carat, type="scatter", mode="markers")
-```
-
-Then add the following arguments:
+Generate the plot using the following code chunk, then add the following arguments:
 
 - color= ~cut
-- size=~depth
-- text = ~paste("Clarity: ", clarity)
+- size= ~z
+- text = ~paste("Clarity: ", clarity, "<br>Price: ", price, "$")
 
 Carefully add the comments to explain the changes in your plot. 
+
+```{r , fig.width = 8, fig.height = 8}
+#df <- diamonds[sample(1:nrow(diamonds), size = 2000),]
+ 
+#plot_ly(df, x = ~x, y = ~price, mode = "markers") %>%
+#layout(title = "Diamonds")
+```
+
+Visit [Plotly's webpage](https://plot.ly/r/line-and-scatter/) for more information.
